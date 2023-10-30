@@ -1,0 +1,9 @@
+/* 広告を非表示にする */
+.ad, .advertisement, .banner-ad {
+    display: none !important;
+}
+
+/* 動画を非表示にする */
+video {
+    display: none !important;
+}
