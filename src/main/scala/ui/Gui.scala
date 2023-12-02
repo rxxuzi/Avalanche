@@ -1,5 +1,6 @@
 package ui
 
+import io.Text
 import javafx.application.{Application, Platform}
 import javafx.beans.value.{ChangeListener, ObservableValue}
 import javafx.scene.Scene
@@ -10,7 +11,6 @@ import javafx.scene.web.WebView
 import javafx.stage.Stage
 import net.OpenHTML
 import net.html.HtmlParser
-import util.Gen
 
 import java.net.{MalformedURLException, URL}
 import scala.concurrent.ExecutionContext
@@ -75,8 +75,7 @@ class Gui extends Application {
           Platform.runLater(() => {
             // UIスレッドでの処理
             val doc = HtmlParser(content)
-            val gen = Gen(doc.getText)
-            gen.saveToTxt(doc.getTitle)
+            Text(doc.getText).save(doc.getTitle)
             statusLabel.setText("Success")
           })
         case Failure(exception) =>
