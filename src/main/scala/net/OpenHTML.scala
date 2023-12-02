@@ -1,6 +1,8 @@
 package net
 
-import java.net.URI
+import util.security.{Security, UserAgent}
+
+import java.net.{HttpURLConnection, URI}
 import java.util.concurrent.Executors
 import scala.concurrent.{ExecutionContext, Future}
 import scala.io.Source
@@ -15,7 +17,6 @@ final class OpenHTML(url : String, async: Boolean) {
 
   // ExecutorServiceをシャットダウンするメソッド
   def shutdown(): Unit = {
-    print("Shutdown")
     executorService.shutdown()
   }
 
@@ -30,10 +31,18 @@ final class OpenHTML(url : String, async: Boolean) {
   }
 
   private def fetchHtmlContent: String = {
-    val uri = new URI(url)
-    val source = Source.fromURL(uri.toURL)
-    try htmlContent = source.mkString
-    finally source.close()
+    if (Security.isUrlSafe(url) && Security.verifySSLCertificate(url)) {
+      val uri = new URI(url)
+      val connection = uri.toURL.openConnection().asInstanceOf[HttpURLConnection]
+      connection.setRequestProperty("User-Agent", UserAgent.getRandomUserAgent)
+
+      val source = Source.fromInputStream(connection.getInputStream)
+      try htmlContent = source.mkString
+      finally source.close()
+
+    } else {
+      throw new IllegalArgumentException("URL is not safe or SSL verification failed")
+    }
     htmlContent
   }
 
