@@ -1,14 +1,19 @@
 package ui
 
-import javafx.application.Application
+import javafx.application.{Application, Platform}
 import javafx.scene.Scene
-import javafx.scene.control.{Button, TextField}
+import javafx.scene.control.{Button, Label, TextField}
+import javafx.scene.image.Image
 import javafx.scene.layout.{HBox, Priority, VBox}
 import javafx.scene.web.WebView
 import javafx.stage.Stage
-import javafx.scene.image.Image
+import net.OpenHTML
+import net.html.HtmlParser
+import util.Gen
 
 import java.net.{MalformedURLException, URL}
+import scala.concurrent.ExecutionContext
+import scala.util.{Failure, Success}
 
 class Gui extends Application {
   override def start(primaryStage: Stage): Unit = {
@@ -51,13 +56,33 @@ class Gui extends Application {
 
     urlField.setOnAction(_ => searchButton.fire())
 
-    val jsToggleButton = new Button("Disable JS")
-    jsToggleButton.setOnAction(_ => {
-      val currentSetting = webEngine.isJavaScriptEnabled
-      webEngine.setJavaScriptEnabled(!currentSetting)
-      jsToggleButton.setText(if (!currentSetting) "Disable JS" else "Enable JS")
-      println(s"JavaScript is now ${if (!currentSetting) "enabled" else "disabled"}")
+    // 保存するボタン
+    val saveButton = new Button("Save")
+    // "Save" ボタンのアクションハンドラ内
+    saveButton.setOnAction(_ => {
+      val url: String = webEngine.getLocation
+      val html = OpenHTML(url, async = true)
+
+      // HTMLコンテンツを非同期で取得
+      val htmlContentFuture = html.getPageContent
+
+      // HTMLコンテンツの取得が完了したら、ファイルに保存
+      htmlContentFuture.onComplete {
+        case Success(content) =>
+          Platform.runLater(() => {
+            // UIスレッドでの処理
+            val doc = HtmlParser(content)
+            val gen = Gen(doc.getText)
+            gen.saveToTxt(doc.getTitle)
+          })
+        case Failure(exception) =>
+          Platform.runLater(() => {
+            // エラー処理: UIスレッドでの処理
+            println(exception.getMessage)
+          })
+      }(ExecutionContext.global)
     })
+
 
     // CSSを使用して広告や動画を非表示にする
     try{
@@ -67,7 +92,7 @@ class Gui extends Application {
     }
 
     // ナビゲーションバーの設定
-    val navigationBar = new HBox(5, backButton, reloadButton, forwardButton, urlField, searchButton, jsToggleButton)
+    val navigationBar = new HBox(5, backButton, reloadButton, forwardButton, urlField, searchButton, saveButton)
     navigationBar.setStyle("-fx-padding: 10;")
 
     val layout = new VBox(5, navigationBar, webView)
