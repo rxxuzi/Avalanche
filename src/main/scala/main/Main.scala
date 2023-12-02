@@ -1,3 +1,5 @@
+package main
+
 import javafx.application.Application.launch
 object Main{
   def main(args: Array[String]): Unit = {

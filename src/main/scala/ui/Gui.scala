@@ -1,6 +1,6 @@
 package ui
 
-import io.Text
+import io.{Json, Text}
 import javafx.application.{Application, Platform}
 import javafx.beans.value.{ChangeListener, ObservableValue}
 import javafx.scene.Scene
@@ -13,10 +13,13 @@ import net.OpenHTML
 import net.html.HtmlParser
 
 import java.net.{MalformedURLException, URL}
+import java.time.ZonedDateTime
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
 
 class Gui extends Application {
+  val json = new Json
+
   override def start(primaryStage: Stage): Unit = {
     val webView = new WebView()
     val webEngine = webView.getEngine
@@ -75,8 +78,12 @@ class Gui extends Application {
           Platform.runLater(() => {
             // UIスレッドでの処理
             val doc = HtmlParser(content)
-            Text(doc.getText).save(doc.getTitle)
+            val txt = Text(doc.getText)
+            txt.save(doc.getTitle)
             statusLabel.setText("Success")
+
+            // jsonにurlとパスを追加
+            json.addData(url, txt.getPath)
           })
         case Failure(exception) =>
           Platform.runLater(() => {
@@ -127,5 +134,16 @@ class Gui extends Application {
         urlField.setText(newValue)
       }
     })
+
+    //アプリを閉じたときの動作
+    primaryStage.setOnCloseRequest(event =>{
+      import java.time.format.DateTimeFormatter
+
+      val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+      val formatted = formatter.format(ZonedDateTime.now())
+
+      json.save(formatted)
+    })
+
   }
 }
