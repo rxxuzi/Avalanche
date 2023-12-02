@@ -1,6 +1,7 @@
 package ui
 
 import javafx.application.{Application, Platform}
+import javafx.beans.value.{ChangeListener, ObservableValue}
 import javafx.scene.Scene
 import javafx.scene.control.{Button, Label, TextField}
 import javafx.scene.image.Image
@@ -56,6 +57,8 @@ class Gui extends Application {
 
     urlField.setOnAction(_ => searchButton.fire())
 
+    val statusLabel = new Label("")
+
     // 保存するボタン
     val saveButton = new Button("Save")
     // "Save" ボタンのアクションハンドラ内
@@ -74,15 +77,19 @@ class Gui extends Application {
             val doc = HtmlParser(content)
             val gen = Gen(doc.getText)
             gen.saveToTxt(doc.getTitle)
+            statusLabel.setText("Success")
           })
         case Failure(exception) =>
           Platform.runLater(() => {
             // エラー処理: UIスレッドでの処理
             println(exception.getMessage)
+            statusLabel.setText("Failure")
           })
       }(ExecutionContext.global)
     })
 
+
+    val buttonBox = new HBox(saveButton, statusLabel)
 
     // CSSを使用して広告や動画を非表示にする
     try{
@@ -92,7 +99,7 @@ class Gui extends Application {
     }
 
     // ナビゲーションバーの設定
-    val navigationBar = new HBox(5, backButton, reloadButton, forwardButton, urlField, searchButton, saveButton)
+    val navigationBar = new HBox(5, backButton, reloadButton, forwardButton, urlField, searchButton, buttonBox)
     navigationBar.setStyle("-fx-padding: 10;")
 
     val layout = new VBox(5, navigationBar, webView)
@@ -106,7 +113,7 @@ class Gui extends Application {
     primaryStage.show()
 
     // アプリケーションのアイコンを設定
-    val iconStream = getClass.getResourceAsStream("/image/icon/Avalanche.png")
+    val iconStream = getClass.getResourceAsStream(global.Config.APP_ICON)
     if (iconStream != null) {
       primaryStage.getIcons.add(new Image(iconStream))
     } else {
@@ -115,5 +122,11 @@ class Gui extends Application {
 
     // 初期URLを読み込む
     webEngine.load(urlField.getText)
+
+    webEngine.locationProperty.addListener(new ChangeListener[String]() {
+      override def changed(observable: ObservableValue[_ <: String], oldValue: String, newValue: String): Unit = {
+        urlField.setText(newValue)
+      }
+    })
   }
 }
