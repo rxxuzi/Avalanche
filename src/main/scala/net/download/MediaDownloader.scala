@@ -25,7 +25,6 @@ class MediaDownloader {
       out.close()
     } match {
       case Success(_) =>
-        println(s"Downloaded: $savePath")
         mediaCount += 1
       case Failure(e) => println(s"Error downloading $fileUrl: ${e.getMessage}")
     }
