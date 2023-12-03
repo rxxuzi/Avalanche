@@ -24,8 +24,8 @@ public final class Crawler {
      * @param url ページのURL
      * @return ページの内容、またはエラーが発生した場合はnull
      */
-    public static String getPageContent(URL url) throws IOException {
-        return getPageContent(url, DEFAULT_TIMEOUT);
+    public static String crawl(URL url) throws IOException {
+        return crawl(url, DEFAULT_TIMEOUT);
     }
 
     /**
@@ -35,7 +35,7 @@ public final class Crawler {
      * @param timeout タイムアウト値 (ミリ秒)
      * @return ページの内容、またはエラーが発生した場合はnull
      */
-    public static String getPageContent(URL url, int timeout) throws IOException {
+    public static String crawl(URL url, int timeout) throws IOException {
         HttpURLConnection connection = null;
         try {
             connection = setupHttpConnection(url, timeout);

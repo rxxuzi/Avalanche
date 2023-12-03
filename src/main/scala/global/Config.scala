@@ -7,6 +7,20 @@ object Config {
   val APP_ICON = "/image/icon/Avalanche.png"
   val APP_NAME = "Avalanche"
 
+  lazy val DATA_DIR : String = {
+    val dir = System.getProperty("user.dir")
+    val dataDir = dir + "/data/"
+    mkdir(dataDir)
+    dataDir
+  }
+
+  lazy val MEDIA_DIR : String = {
+    val dir = System.getProperty("user.dir")
+    val mediaDir = dir + "/output/media/"
+    mkdir(mediaDir)
+    mediaDir
+  }
+
   lazy val SAVE_DIR :String = {
     val dir = System.getProperty("user.dir")
     val saveDir = dir + "/output/"

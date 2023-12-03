@@ -49,7 +49,13 @@ class HtmlParser(content: String){
   def getLinks: Seq[String] = document.select("a[href]").eachAttr("abs:href").asScala.toSeq
 
   // 画像を抽出するメソッド
-  def getImages: Seq[String] = document.select("img[src]").eachAttr("abs:src").asScala.toSeq
+  def getImages: Seq[(String, String)] = {
+    document.select("img[src]").asScala.toSeq.map { img =>
+      val src = img.absUrl("src")
+      val alt = Option(img.attr("alt")).getOrElse("null")
+      (src, alt)
+    }
+  }
 }
 object HtmlParser {
   def apply(content: String): HtmlParser = new HtmlParser(content)

@@ -1,21 +1,19 @@
 package ui
 
-import io.{Json, Text}
-import javafx.application.{Application, Platform}
+import io.{Html, Json, Text}
+import javafx.application.Application
 import javafx.beans.value.{ChangeListener, ObservableValue}
 import javafx.scene.Scene
-import javafx.scene.control.{Button, Label, TextField}
+import javafx.scene.control.{Button, ComboBox, TextField}
 import javafx.scene.image.Image
 import javafx.scene.layout.{HBox, Priority, VBox}
 import javafx.scene.web.WebView
 import javafx.stage.Stage
 import net.OpenHTML
-import net.html.HtmlParser
+import net.download.MediaDownloader
 
-import java.net.{MalformedURLException, URL}
+import java.net.{MalformedURLException, URI}
 import java.time.ZonedDateTime
-import scala.concurrent.ExecutionContext
-import scala.util.{Failure, Success}
 
 class Gui extends Application {
   val json = new Json
@@ -50,7 +48,7 @@ class Gui extends Application {
     // 正しいURLが入力されていない場合、Googleで文字列を検索
     searchButton.setOnAction(_ => {
       try {
-        new URL(urlField.getText)
+        new URI(urlField.getText).toURL
         webEngine.load(urlField.getText)
       } catch {
         case _: MalformedURLException =>
@@ -60,42 +58,48 @@ class Gui extends Application {
 
     urlField.setOnAction(_ => searchButton.fire())
 
-    val statusLabel = new Label("")
+    val saveOptions = new ComboBox[String]()
+    saveOptions.getItems.addAll("Text", "Image", "HTML")
+    saveOptions.setValue("Text")
 
     // 保存するボタン
     val saveButton = new Button("Save")
     // "Save" ボタンのアクションハンドラ内
     saveButton.setOnAction(_ => {
       val url: String = webEngine.getLocation
-      val html = OpenHTML(url, async = true)
+      val openhtml =  new OpenHTML(url, async = true)
+      val hx = openhtml.getHtml
+      val selectedOption = saveOptions.getValue
 
-      // HTMLコンテンツを非同期で取得
-      val htmlContentFuture = html.getPageContent
+      try{
+        val doc = openhtml.toHTMLParser
 
-      // HTMLコンテンツの取得が完了したら、ファイルに保存
-      htmlContentFuture.onComplete {
-        case Success(content) =>
-          Platform.runLater(() => {
-            // UIスレッドでの処理
-            val doc = HtmlParser(content)
+        selectedOption match {
+          case "Text"
+          =>
             val txt = Text(doc.getText)
             txt.save(doc.getTitle)
-            statusLabel.setText("Success")
-
-            // jsonにurlとパスを追加
             json.addData(url, txt.getPath)
-          })
-        case Failure(exception) =>
-          Platform.runLater(() => {
-            // エラー処理: UIスレッドでの処理
-            println(exception.getMessage)
-            statusLabel.setText("Failure")
-          })
-      }(ExecutionContext.global)
+            println("Txtで保存" + txt.getPath)
+          case "Image"
+          =>
+            val medias = doc.getImages
+            val downloader = new MediaDownloader()
+            downloader.downloads(medias)
+          case "HTML"
+          => val html = Html(hx)
+            html.save(doc.getTitle)
+            json.addData(url, html.getPath)
+          println("Htmlで保存" + html.getPath)
+        }
+      }catch {
+        case _: Throwable =>
+          println("Failure")
+      }
     })
 
 
-    val buttonBox = new HBox(saveButton, statusLabel)
+    val buttonBox = new HBox(saveButton, saveOptions)
 
     // CSSを使用して広告や動画を非表示にする
     try{
@@ -136,7 +140,7 @@ class Gui extends Application {
     })
 
     //アプリを閉じたときの動作
-    primaryStage.setOnCloseRequest(event =>{
+    primaryStage.setOnCloseRequest(_ =>{
       import java.time.format.DateTimeFormatter
 
       val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")

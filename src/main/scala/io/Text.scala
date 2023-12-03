@@ -4,7 +4,7 @@ import global.Config
 
 class Text(private val value: String) extends Gen {
   override val data: String = value
-  override val dir : String = Config.SAVE_DIR
+  override val dir : String = Config.SAVE_DIR + "txt/"
   override val ext : String = Config.SAVE_EXT
 
   override def getPath: String = super.getPath
