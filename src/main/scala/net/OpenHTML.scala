@@ -2,7 +2,7 @@ package net
 
 import util.security.{Security, UserAgent}
 
-import java.net.{HttpURLConnection, URI}
+import java.net.{HttpURLConnection, URI, URL}
 import java.util.concurrent.Executors
 import scala.concurrent.{ExecutionContext, Future}
 import scala.io.Source
@@ -21,6 +21,8 @@ final class OpenHTML(url : String, async: Boolean) {
   }
 
   private var htmlContent: String = ""
+
+  def getHtml: String = fetchHtmlContent
 
   def getPageContent: Future[String] = {
     if (async) {
@@ -50,6 +52,8 @@ final class OpenHTML(url : String, async: Boolean) {
     val document = new org.jsoup.nodes.Document(htmlContent)
     if(document.title == null) "example" else document.title
   }
+
+  override def toString: String = htmlContent
 }
 
 object OpenHTML {

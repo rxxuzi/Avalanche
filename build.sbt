@@ -23,6 +23,8 @@ libraryDependencies ++= Seq(
   "org.apache.httpcomponents" % "httpclient" % "4.5.14" // Apache HttpClientのバージョン
 )
 
+libraryDependencies += "net.sourceforge.htmlunit" % "htmlunit" % "2.70.0"
+
 // Ensure that the JavaFX jars are on the runtime classpath
 // This is necessary because JavaFX is no longer included with the JDK as of JDK 11
 run / fork := true
