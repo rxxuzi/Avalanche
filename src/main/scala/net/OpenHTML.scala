@@ -11,41 +11,7 @@ import scala.util.{Failure, Success}
 
 final class OpenHTML(url : String, async: Boolean) {
   if (url == null) throw new IllegalArgumentException("URL cannot be null")
-
-//  // ExecutorServiceのインスタンスを保持
-//  private val executorService = Executors.newCachedThreadPool()
-//
-//  // ExecutionContextをExecutorServiceを使って作成
-//  implicit val ec: ExecutionContext = ExecutionContext.fromExecutorService(executorService)
-//
-//  // ExecutorServiceをシャットダウンするメソッド
-////  private def shutdown(): Unit = {
-////    executorService.shutdown()
-////  }
-  // HTMLコンテンツを格納する変数
   private var htmlContent: String = fetchHtmlContent
-//
-//  // URLからHTMLコンテンツを非同期で取得
-//  private val futureHtmlContent: Future[String] = crawl
-//
-//  // Futureの結果が利用可能になったときに実行されるコールバック
-//  futureHtmlContent.onComplete {
-//    case Success(content) =>
-//      success  = true
-//      htmlContent = content
-//    case Failure(ex) =>
-//      success = false
-//      println(s"エラーが発生しました: ${ex.getMessage}")
-//  }
-//
-//  def crawl: Future[String] = {
-//    if (async) {
-//      Future {
-//        fetchHtmlContent
-//      }(ExecutionContext.global)
-//    } else Future.successful(fetchHtmlContent)
-//  }
-
   private def fetchHtmlContent: String = {
     if (Security.isUrlSafe(url) && Security.verifySSLCertificate(url)) {
       val uri = new URI(url)

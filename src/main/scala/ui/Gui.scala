@@ -12,7 +12,7 @@ import javafx.stage.Stage
 import net.OpenHTML
 import net.download.MediaDownloader
 
-import java.net.{MalformedURLException, URI}
+import java.net.{MalformedURLException, URI, URL}
 import java.time.ZonedDateTime
 
 class Gui extends Application {
@@ -48,7 +48,7 @@ class Gui extends Application {
     // 正しいURLが入力されていない場合、Googleで文字列を検索
     searchButton.setOnAction(_ => {
       try {
-        new URI(urlField.getText).toURL
+        new URL(urlField.getText)
         webEngine.load(urlField.getText)
       } catch {
         case _: MalformedURLException =>
@@ -86,6 +86,7 @@ class Gui extends Application {
             val medias = doc.getImages
             val downloader = new MediaDownloader()
             downloader.downloads(medias)
+
           case "HTML"
           => val html = Html(hx)
             html.save(doc.getTitle)
@@ -93,8 +94,9 @@ class Gui extends Application {
           println("Htmlで保存" + html.getPath)
         }
       }catch {
-        case _: Throwable =>
-          println("Failure")
+        case e: Exception => println(e.getMessage)
+//        case _: Throwable =>
+//          println("Failure" )
       }
     })
 
@@ -147,6 +149,7 @@ class Gui extends Application {
       val formatted = formatter.format(ZonedDateTime.now())
 
       json.save(formatted)
+      println("Save Json : " + formatted)
     })
 
   }
