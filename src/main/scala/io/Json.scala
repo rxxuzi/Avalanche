@@ -26,6 +26,10 @@ class Json extends Gen {
     keyCounter += 1
   }
 
+  def addData(list: List[(String, String)]): Unit = {
+    list.foreach(x => addData(x._1, x._2))
+  }
+
 
   override def save(filename: String): Unit = {
     val json = dataMap.map {

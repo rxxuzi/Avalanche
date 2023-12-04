@@ -9,6 +9,7 @@ import scala.util.{Failure, Success, Try}
 class MediaDownloader {
   private var mediaCount = 0
   private var c = 0
+  var downloadList = List[(String, String)]()
 
   def download(fileUrl: String, savePath: String): Unit = {
     Try {
@@ -26,6 +27,7 @@ class MediaDownloader {
     } match {
       case Success(_) =>
         mediaCount += 1
+        downloadList = downloadList :+ (fileUrl, savePath)
       case Failure(e) => println(s"Error downloading $fileUrl: ${e.getMessage}")
     }
   }
@@ -35,7 +37,7 @@ class MediaDownloader {
     media.foreach { case (src, alt) =>
       val extension = src.split('.').last
       val fileName = if (alt == "null") "default" else alt.replaceAll("\\s+", "_")
-      val savePath = s"${Config.MEDIA_DIR}$fileName.$extension"
+      val savePath = s"${Config.MEDIA_DIR}$fileName.$extension".replaceAll("/","-")
       Try(new URI(src).toURL) match {
         case Success(_) => download(src, savePath)
         case Failure(e) =>
