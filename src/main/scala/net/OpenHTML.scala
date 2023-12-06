@@ -5,9 +5,6 @@ import net.http.Crawler
 import util.security.Security
 
 import java.net.URI
-import java.util.concurrent.Executors
-import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success}
 
 final class OpenHTML(url : String, async: Boolean) {
   if (url == null) throw new IllegalArgumentException("URL cannot be null")
